@@ -105,3 +105,10 @@
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+
+@keyframes scan-line {
+  0% { top: 10%; }
+  50% { top: 85%; }
+  100% { top: 10%; }
+}
+.animate-scan-line { animation: scan-line 2s ease-in-out infinite; position: absolute; }
