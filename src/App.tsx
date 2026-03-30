@@ -27,6 +27,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/add-visitor" element={<ProtectedRoute><AddVisitor /></ProtectedRoute>} />
       <Route path="/visitors" element={<ProtectedRoute><VisitorList /></ProtectedRoute>} />
+      <Route path="/face-recognition" element={<ProtectedRoute><FaceRecognition /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

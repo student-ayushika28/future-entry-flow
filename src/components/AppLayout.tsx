@@ -9,6 +9,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/add-visitor", label: "Add Visitor", icon: UserPlus },
   { to: "/visitors", label: "Visitor List", icon: Users },
+  { to: "/face-recognition", label: "Face Scan", icon: ScanFace },
 ];
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
