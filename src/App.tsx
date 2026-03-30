@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import AddVisitor from "./pages/AddVisitor";
 import VisitorList from "./pages/VisitorList";
+import FaceRecognition from "./pages/FaceRecognition";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
