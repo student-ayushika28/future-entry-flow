@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, UserPlus, Users, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, UserPlus, Users, ScanFace, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingShapes from "./FloatingShapes";
 
