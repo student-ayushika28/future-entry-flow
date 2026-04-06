@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, UserPlus, Users, ScanFace, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, UserPlus, Users, ScanFace, QrCode, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingShapes from "./FloatingShapes";
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/add-visitor", label: "Add Visitor", icon: UserPlus },
   { to: "/visitors", label: "Visitor List", icon: Users },
+  { to: "/qr-checkin", label: "QR Check-In", icon: QrCode },
   { to: "/face-recognition", label: "Face Scan", icon: ScanFace },
 ];
 
