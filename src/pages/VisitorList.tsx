@@ -13,7 +13,7 @@ const VisitorList = () => {
   const { visitors, updateStatus, deleteVisitor } = useVisitors();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("All");
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filtered = visitors.filter(v => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.email.toLowerCase().includes(search.toLowerCase());
@@ -26,12 +26,12 @@ const VisitorList = () => {
     s === "Rejected" ? "bg-destructive/20 text-destructive" :
     "bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]";
 
-  const handleApprove = (id: number) => {
+  const handleApprove = (id: string) => {
     updateStatus(id, "Approved");
     toast({ title: "Visitor Approved", description: "Status updated successfully." });
   };
 
-  const handleReject = (id: number) => {
+  const handleReject = (id: string) => {
     updateStatus(id, "Rejected");
     toast({ title: "Visitor Rejected", description: "Status updated.", variant: "destructive" });
   };
