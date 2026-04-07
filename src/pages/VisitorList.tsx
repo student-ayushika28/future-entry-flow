@@ -26,7 +26,7 @@ const VisitorList = () => {
     s === "Rejected" ? "bg-destructive/20 text-destructive" :
     "bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]";
 
-  const handleApprove = (id: number) => {
+  const handleApprove = (id: string) => {
     updateStatus(id, "Approved");
     toast({ title: "Visitor Approved", description: "Status updated successfully." });
   };
