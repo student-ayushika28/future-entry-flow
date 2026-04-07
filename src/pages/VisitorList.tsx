@@ -31,7 +31,7 @@ const VisitorList = () => {
     toast({ title: "Visitor Approved", description: "Status updated successfully." });
   };
 
-  const handleReject = (id: number) => {
+  const handleReject = (id: string) => {
     updateStatus(id, "Rejected");
     toast({ title: "Visitor Rejected", description: "Status updated.", variant: "destructive" });
   };
