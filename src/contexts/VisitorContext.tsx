@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type VisitorStatus = "Pending" | "Approved" | "Rejected";
 
 export interface Visitor {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -15,43 +16,79 @@ export interface Visitor {
 
 interface VisitorContextType {
   visitors: Visitor[];
-  addVisitor: (v: Omit<Visitor, "id" | "status">) => void;
-  updateStatus: (id: number, status: VisitorStatus) => void;
-  deleteVisitor: (id: number) => void;
+  loading: boolean;
+  addVisitor: (v: Omit<Visitor, "id" | "status">) => Promise<void>;
+  updateStatus: (id: string, status: VisitorStatus) => Promise<void>;
+  deleteVisitor: (id: string) => Promise<void>;
+  refreshVisitors: () => Promise<void>;
 }
-
-const today = new Date().toISOString().slice(0, 16);
-const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 16);
-
-const seedVisitors: Visitor[] = [
-  { id: 1, name: "Rahul Sharma", email: "rahul@mail.com", phone: "9876543210", purpose: "Campus Tour", personToMeet: "Dr. Mehta", dateTime: today, status: "Approved" },
-  { id: 2, name: "Priya Patel", email: "priya@mail.com", phone: "9123456780", purpose: "Interview", personToMeet: "Prof. Singh", dateTime: today, status: "Pending" },
-  { id: 3, name: "Amit Kumar", email: "amit@mail.com", phone: "9988776655", purpose: "Document Submission", personToMeet: "Admin Office", dateTime: yesterday, status: "Rejected" },
-  { id: 4, name: "Sneha Gupta", email: "sneha@mail.com", phone: "9001122334", purpose: "Meeting", personToMeet: "Dean", dateTime: today, status: "Approved" },
-  { id: 5, name: "Vikram Joshi", email: "vikram@mail.com", phone: "9876001234", purpose: "Event Attendance", personToMeet: "HOD CS", dateTime: yesterday, status: "Pending" },
-];
 
 const VisitorContext = createContext<VisitorContextType | null>(null);
 
+const mapRow = (row: any): Visitor => ({
+  id: row.id,
+  name: row.name,
+  email: row.email || "N/A",
+  phone: row.phone,
+  purpose: row.purpose,
+  personToMeet: row.person_to_meet || "General",
+  dateTime: row.date_time,
+  status: row.status as VisitorStatus,
+});
+
 export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [visitors, setVisitors] = useState<Visitor[]>(seedVisitors);
-  const [nextId, setNextId] = useState(6);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addVisitor = useCallback((v: Omit<Visitor, "id" | "status">) => {
-    setVisitors(prev => [...prev, { ...v, id: nextId, status: "Pending" }]);
-    setNextId(n => n + 1);
-  }, [nextId]);
-
-  const updateStatus = useCallback((id: number, status: VisitorStatus) => {
-    setVisitors(prev => prev.map(v => v.id === id ? { ...v, status } : v));
+  const refreshVisitors = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("visitors")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      setVisitors(data.map(mapRow));
+    }
+    setLoading(false);
   }, []);
 
-  const deleteVisitor = useCallback((id: number) => {
-    setVisitors(prev => prev.filter(v => v.id !== id));
+  useEffect(() => {
+    refreshVisitors();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel("visitors-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "visitors" }, () => {
+        refreshVisitors();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refreshVisitors]);
+
+  const addVisitor = useCallback(async (v: Omit<Visitor, "id" | "status">) => {
+    await supabase.from("visitors").insert({
+      name: v.name,
+      email: v.email || "N/A",
+      phone: v.phone,
+      purpose: v.purpose,
+      person_to_meet: v.personToMeet,
+      date_time: v.dateTime,
+      status: "Pending",
+    });
+  }, []);
+
+  const updateStatus = useCallback(async (id: string, status: VisitorStatus) => {
+    await supabase.from("visitors").update({ status }).eq("id", id);
+  }, []);
+
+  const deleteVisitor = useCallback(async (id: string) => {
+    await supabase.from("visitors").delete().eq("id", id);
   }, []);
 
   return (
-    <VisitorContext.Provider value={{ visitors, addVisitor, updateStatus, deleteVisitor }}>
+    <VisitorContext.Provider value={{ visitors, loading, addVisitor, updateStatus, deleteVisitor, refreshVisitors }}>
       {children}
     </VisitorContext.Provider>
   );

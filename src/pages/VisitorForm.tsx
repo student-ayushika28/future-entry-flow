@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useVisitors } from "@/contexts/VisitorContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Phone, FileText, CheckCircle2 } from "lucide-react";
 import FloatingShapes from "@/components/FloatingShapes";
@@ -12,7 +12,6 @@ import FloatingShapes from "@/components/FloatingShapes";
 const purposes = ["Campus Tour", "Interview", "Meeting", "Document Submission", "Event Attendance", "Other"];
 
 const VisitorForm = () => {
-  const { addVisitor } = useVisitors();
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,26 +26,31 @@ const VisitorForm = () => {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
     setLoading(true);
-    setTimeout(() => {
-      addVisitor({
-        name: form.name.trim(),
-        email: form.email.trim() || "N/A",
-        phone: form.phone.trim(),
-        purpose: form.purpose,
-        personToMeet: form.personToMeet.trim() || "General",
-        dateTime: new Date().toISOString().slice(0, 16),
-      });
-      setLoading(false);
-      setSubmitted(true);
-      toast({ title: "Request Submitted!", description: "Your visit request is pending admin approval." });
-    }, 1200);
+    const { error } = await supabase.from("visitors").insert({
+      name: form.name.trim(),
+      email: form.email.trim() || "N/A",
+      phone: form.phone.trim(),
+      purpose: form.purpose,
+      person_to_meet: form.personToMeet.trim() || "General",
+      date_time: new Date().toISOString(),
+      status: "Pending",
+    });
+    setLoading(false);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to submit. Please try again.", variant: "destructive" });
+      return;
+    }
+
+    setSubmitted(true);
+    toast({ title: "Request Submitted!", description: "Your visit request is pending admin approval." });
   };
 
   if (submitted) {
