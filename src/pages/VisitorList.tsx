@@ -13,7 +13,7 @@ const VisitorList = () => {
   const { visitors, updateStatus, deleteVisitor } = useVisitors();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("All");
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const filtered = visitors.filter(v => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.email.toLowerCase().includes(search.toLowerCase());
