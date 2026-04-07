@@ -42,8 +42,7 @@ const AddVisitor = () => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    addVisitor(form);
+    await addVisitor(form);
     toast({ title: "Visitor Added!", description: `${form.name} has been registered.` });
     setLoading(false);
     navigate("/visitors");
