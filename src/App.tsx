@@ -11,21 +11,28 @@ import VisitorList from "./pages/VisitorList";
 import FaceRecognition from "./pages/FaceRecognition";
 import QRCheckIn from "./pages/QRCheckIn";
 import VisitorForm from "./pages/VisitorForm";
+import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <div className="min-h-screen gradient-bg flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen gradient-bg flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
 
   return (
     <Routes>
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Index />} />
+      <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Signup />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/add-visitor" element={<ProtectedRoute><AddVisitor /></ProtectedRoute>} />
       <Route path="/visitors" element={<ProtectedRoute><VisitorList /></ProtectedRoute>} />
