@@ -14,13 +14,13 @@ const navItems = [
 ];
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { logout } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate("/");
   };
 
@@ -45,9 +45,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--neon-violet))] flex items-center justify-center text-xs font-bold">
-                A
+                {user?.email?.[0]?.toUpperCase() || "U"}
               </div>
-              <span className="text-sm font-medium hidden sm:block">Admin</span>
+              <span className="text-sm font-medium hidden sm:block">{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"}</span>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
               <LogOut size={18} />
