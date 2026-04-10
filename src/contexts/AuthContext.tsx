@@ -1,28 +1,107 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
+
+type AppRole = "admin" | "security" | "employee";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
+  user: User | null;
+  session: Session | null;
+  roles: AppRole[];
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error?: string }>;
+  signOut: () => Promise<void>;
+  hasRole: (role: AppRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const login = useCallback((email: string, password: string) => {
-    if (email === "admin@gmail.com" && password === "admin@12") {
-      setIsAuthenticated(true);
-      return true;
+  const fetchRoles = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    if (data) {
+      setRoles(data.map((r: any) => r.role as AppRole));
     }
-    return false;
   }, []);
 
-  const logout = useCallback(() => setIsAuthenticated(false), []);
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          // Use setTimeout to avoid potential deadlock with Supabase client
+          setTimeout(() => fetchRoles(session.user.id), 0);
+        } else {
+          setRoles([]);
+        }
+        setLoading(false);
+      }
+    );
+
+    // THEN check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchRoles(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchRoles]);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
+  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  const hasRole = useCallback((role: AppRole) => roles.includes(role), [roles]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: !!session,
+        user,
+        session,
+        roles,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        hasRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
