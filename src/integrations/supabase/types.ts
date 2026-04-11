@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -72,6 +102,7 @@ export type Database = {
           person_to_meet: string | null
           phone: string
           purpose: string
+          risk_score: number | null
           status: string
           updated_at: string
         }
@@ -84,6 +115,7 @@ export type Database = {
           person_to_meet?: string | null
           phone: string
           purpose: string
+          risk_score?: number | null
           status?: string
           updated_at?: string
         }
@@ -96,7 +128,44 @@ export type Database = {
           person_to_meet?: string | null
           phone?: string
           purpose?: string
+          risk_score?: number | null
           status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      watchlist: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          reason: string
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          reason: string
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          reason?: string
+          risk_level?: Database["public"]["Enums"]["risk_level"]
           updated_at?: string
         }
         Relationships: []
@@ -116,6 +185,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "security" | "employee"
+      risk_level: "low" | "medium" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -244,6 +314,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "security", "employee"],
+      risk_level: ["low", "medium", "high", "critical"],
     },
   },
 } as const
