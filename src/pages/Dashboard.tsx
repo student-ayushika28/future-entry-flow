@@ -1,18 +1,19 @@
 import { useVisitors } from "@/contexts/VisitorContext";
-import { Users, UserCheck, UserX, CalendarDays } from "lucide-react";
+import { Users, UserCheck, UserX, CalendarDays, Shield, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/AppLayout";
+import AIInsightsPanel from "@/components/AIInsightsPanel";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid,
 } from "recharts";
 
 const CHART_COLORS = [
-  "hsl(250, 90%, 65%)", // primary
-  "hsl(190, 95%, 55%)", // cyan
-  "hsl(270, 95%, 65%)", // violet
-  "hsl(330, 90%, 65%)", // pink
-  "hsl(145, 80%, 45%)", // success
+  "hsl(250, 90%, 65%)",
+  "hsl(190, 95%, 55%)",
+  "hsl(270, 95%, 65%)",
+  "hsl(330, 90%, 65%)",
+  "hsl(145, 80%, 45%)",
 ];
 
 const Dashboard = () => {
@@ -27,10 +28,9 @@ const Dashboard = () => {
     { label: "Total Visitors", value: visitors.length, icon: Users, gradient: "from-[hsl(var(--primary))] to-[hsl(var(--neon-violet))]" },
     { label: "Today's Visitors", value: todayVisitors.length, icon: CalendarDays, gradient: "from-[hsl(var(--neon-cyan))] to-[hsl(var(--primary))]" },
     { label: "Approved", value: approved, icon: UserCheck, gradient: "from-[hsl(var(--success))] to-[hsl(var(--neon-cyan))]" },
-    { label: "Rejected", value: rejected, icon: UserX, gradient: "from-[hsl(var(--destructive))] to-[hsl(var(--neon-pink))]" },
+    { label: "Pending", value: pending, icon: AlertTriangle, gradient: "from-[hsl(var(--warning))] to-orange-500" },
   ];
 
-  // Generate daily visitor data (last 7 days)
   const dailyData = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -40,22 +40,15 @@ const Dashboard = () => {
     return { day: dayLabel, visitors: count || Math.floor(Math.random() * 4 + 1) };
   });
 
-  // Peak hours data
-  const peakHours = [
-    { hour: "8AM", count: 2 }, { hour: "9AM", count: 5 }, { hour: "10AM", count: 8 },
-    { hour: "11AM", count: 6 }, { hour: "12PM", count: 4 }, { hour: "1PM", count: 3 },
-    { hour: "2PM", count: 7 }, { hour: "3PM", count: 9 }, { hour: "4PM", count: 5 },
-    { hour: "5PM", count: 2 },
-  ];
-
-  // Department-wise distribution
-  const departments = [
-    { name: "Admin Office", value: 3 },
-    { name: "CS Dept", value: 4 },
-    { name: "Dean Office", value: 2 },
-    { name: "Library", value: 1 },
-    { name: "HR", value: 2 },
-  ];
+  const peakHours = Array.from({ length: 10 }, (_, i) => {
+    const hour = i + 8;
+    const label = hour <= 12 ? `${hour}AM` : `${hour - 12}PM`;
+    const count = visitors.filter(v => {
+      const h = new Date(v.dateTime).getHours();
+      return h === hour;
+    }).length;
+    return { hour: label, count: count || Math.floor(Math.random() * 8 + 1) };
+  });
 
   const statusData = [
     { name: "Approved", value: approved || 2 },
@@ -84,7 +77,7 @@ const Dashboard = () => {
       <div className="space-y-8 animate-fade-in">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Overview of your visitor management system</p>
+          <p className="text-muted-foreground text-sm mt-1">AI-powered visitor management overview</p>
         </div>
 
         {/* Stat cards */}
@@ -102,9 +95,11 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* AI Insights Panel */}
+        <AIInsightsPanel />
+
         {/* Charts Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Daily Visitors Area Chart */}
           <div className="glass rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4">Daily Visitor Trend</h2>
             <ResponsiveContainer width="100%" height={240}>
@@ -124,7 +119,6 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Peak Hours Bar Chart */}
           <div className="glass rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4">Peak Visiting Hours</h2>
             <ResponsiveContainer width="100%" height={240}>
@@ -143,57 +137,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Charts Row 2 */}
+        {/* Status Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Department Distribution */}
-          <div className="glass rounded-2xl p-6">
-            <h2 className="text-lg font-semibold mb-4">Department-wise Distribution</h2>
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={departments}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {departments.map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip {...chartTooltipStyle} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap gap-3 justify-center mt-2">
-              {departments.map((d, i) => (
-                <div key={d.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: CHART_COLORS[i] }} />
-                  {d.name}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Status Distribution */}
           <div className="glass rounded-2xl p-6">
             <h2 className="text-lg font-semibold mb-4">Visitor Status Breakdown</h2>
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={4}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {statusData.map((_, i) => (
-                    <Cell key={i} fill={statusColors[i]} />
-                  ))}
+                <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {statusData.map((_, i) => <Cell key={i} fill={statusColors[i]} />)}
                 </Pie>
                 <Tooltip {...chartTooltipStyle} />
               </PieChart>
@@ -201,40 +153,37 @@ const Dashboard = () => {
             <div className="flex flex-wrap gap-3 justify-center mt-2">
               {statusData.map((d, i) => (
                 <div key={d.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColors[i] }} />
-                  {d.name} ({d.value})
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColors[i] }} /> {d.name} ({d.value})
                 </div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Recent visitors */}
-        <div className="glass rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Visitors</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-muted-foreground">
-                  <th className="text-left py-3 px-2 font-medium">Name</th>
-                  <th className="text-left py-3 px-2 font-medium hidden sm:table-cell">Purpose</th>
-                  <th className="text-left py-3 px-2 font-medium hidden md:table-cell">Person to Meet</th>
-                  <th className="text-left py-3 px-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visitors.slice(0, 5).map(v => (
-                  <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-2 font-medium">{v.name}</td>
-                    <td className="py-3 px-2 text-muted-foreground hidden sm:table-cell">{v.purpose}</td>
-                    <td className="py-3 px-2 text-muted-foreground hidden md:table-cell">{v.personToMeet}</td>
-                    <td className="py-3 px-2">
-                      <Badge className={`${statusColor(v.status)} border-0 text-xs`}>{v.status}</Badge>
-                    </td>
+          {/* Recent visitors */}
+          <div className="glass rounded-2xl p-6">
+            <h2 className="text-lg font-semibold mb-4">Recent Visitors</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-muted-foreground">
+                    <th className="text-left py-3 px-2 font-medium">Name</th>
+                    <th className="text-left py-3 px-2 font-medium">Purpose</th>
+                    <th className="text-left py-3 px-2 font-medium">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {visitors.slice(0, 6).map(v => (
+                    <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="py-2.5 px-2 font-medium">{v.name}</td>
+                      <td className="py-2.5 px-2 text-muted-foreground">{v.purpose}</td>
+                      <td className="py-2.5 px-2">
+                        <Badge className={`${statusColor(v.status)} border-0 text-xs`}>{v.status}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
