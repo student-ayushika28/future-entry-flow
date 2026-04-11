@@ -48,13 +48,13 @@ const Watchlist = () => {
       toast({ title: "Required", description: "Name and reason are required.", variant: "destructive" });
       return;
     }
-    const { error } = await supabase.from("watchlist").insert({
+    const { error } = await supabase.from("watchlist").insert([{
       name: form.name.trim(),
       phone: form.phone.trim() || null,
       email: form.email.trim() || null,
       reason: form.reason.trim(),
-      risk_level: form.risk_level,
-    });
+      risk_level: form.risk_level as any,
+    }]);
     if (error) {
       toast({ title: "Error", description: "Failed to add entry.", variant: "destructive" });
       return;
