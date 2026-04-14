@@ -49,7 +49,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--neon-violet))] flex items-center justify-center text-xs font-bold">
                 {user?.email?.[0]?.toUpperCase() || "U"}
               </div>
-              <span className="text-sm font-medium hidden sm:block">{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"}</span>
+              <div className="hidden sm:block">
+                <span className="text-sm font-medium block">{user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"}</span>
+                {user?.email && <span className="text-xs text-muted-foreground block">{user.email}</span>}
+              </div>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
               <LogOut size={18} />
