@@ -126,7 +126,6 @@ const VisitorList = () => {
                      <td className="py-3 px-4">
                        <Badge className={`${statusColor(v.status)} border-0 text-xs`}>{v.status}</Badge>
                      </td>
-                    </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]" onClick={() => handleApprove(v.id)} title="Approve">
