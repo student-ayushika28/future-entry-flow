@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LayoutDashboard, UserPlus, Users, ScanFace, QrCode, LogOut, Menu, X, Shield, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FloatingShapes from "./FloatingShapes";
+import NotificationBell from "./NotificationBell";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -45,6 +46,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--neon-violet))] flex items-center justify-center text-xs font-bold">
                 {user?.email?.[0]?.toUpperCase() || "U"}
