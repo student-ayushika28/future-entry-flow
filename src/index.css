@@ -112,3 +112,15 @@
   100% { top: 10%; }
 }
 .animate-scan-line { animation: scan-line 2s ease-in-out infinite; position: absolute; }
+
+@keyframes flash-red {
+  0%, 100% { background-color: hsl(0 84% 60% / 0.05); }
+  50% { background-color: hsl(0 84% 60% / 0.15); }
+}
+.animate-flash-red { animation: flash-red 1.5s ease-in-out infinite; }
+
+@keyframes pulse-alert {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(0 84% 60% / 0.4); }
+  50% { box-shadow: 0 0 20px 4px hsl(0 84% 60% / 0.2); }
+}
+.animate-pulse-alert { animation: pulse-alert 2s ease-in-out infinite; }
