@@ -1,19 +1,39 @@
 import { useState } from "react";
 import { useVisitors, VisitorStatus } from "@/contexts/VisitorContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Trash2, ScanLine } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
+import RiskScoreBadge from "@/components/RiskScoreBadge";
 
 const VisitorList = () => {
-  const { visitors, updateStatus, deleteVisitor } = useVisitors();
+  const { visitors, updateStatus, deleteVisitor, refreshVisitors } = useVisitors();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("All");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [scanningId, setScanningId] = useState<string | null>(null);
+
+  const handleRiskScan = async (id: string) => {
+    setScanningId(id);
+    try {
+      const { data, error } = await supabase.functions.invoke("risk-scan", { body: { visitor_id: id } });
+      if (error) throw error;
+      toast({
+        title: `Risk Score: ${data.risk_score}/100 (${data.risk_level})`,
+        description: data.flags?.join(". ") || "No risk flags detected.",
+        variant: data.risk_score >= 50 ? "destructive" : "default",
+      });
+      refreshVisitors();
+    } catch (e: any) {
+      toast({ title: "Risk Scan Failed", description: e.message, variant: "destructive" });
+    }
+    setScanningId(null);
+  };
 
   const filtered = visitors.filter(v => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.email.toLowerCase().includes(search.toLowerCase());
@@ -86,9 +106,10 @@ const VisitorList = () => {
                   <th className="text-left py-3 px-4 font-medium">Name</th>
                   <th className="text-left py-3 px-4 font-medium hidden md:table-cell">Email</th>
                   <th className="text-left py-3 px-4 font-medium hidden sm:table-cell">Purpose</th>
-                  <th className="text-left py-3 px-4 font-medium hidden lg:table-cell">Time</th>
-                  <th className="text-left py-3 px-4 font-medium">Status</th>
-                  <th className="text-left py-3 px-4 font-medium">Actions</th>
+                   <th className="text-left py-3 px-4 font-medium hidden lg:table-cell">Time</th>
+                   <th className="text-left py-3 px-4 font-medium">Risk</th>
+                   <th className="text-left py-3 px-4 font-medium">Status</th>
+                   <th className="text-left py-3 px-4 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,9 +119,13 @@ const VisitorList = () => {
                     <td className="py-3 px-4 font-medium">{v.name}</td>
                     <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{v.email}</td>
                     <td className="py-3 px-4 text-muted-foreground hidden sm:table-cell">{v.purpose}</td>
-                    <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell">{new Date(v.dateTime).toLocaleString()}</td>
-                    <td className="py-3 px-4">
-                      <Badge className={`${statusColor(v.status)} border-0 text-xs`}>{v.status}</Badge>
+                     <td className="py-3 px-4 text-muted-foreground hidden lg:table-cell">{new Date(v.dateTime).toLocaleString()}</td>
+                     <td className="py-3 px-4">
+                       <RiskScoreBadge score={v.riskScore} />
+                     </td>
+                     <td className="py-3 px-4">
+                       <Badge className={`${statusColor(v.status)} border-0 text-xs`}>{v.status}</Badge>
+                     </td>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-1">
@@ -110,9 +135,12 @@ const VisitorList = () => {
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleReject(v.id)} title="Reject">
                           <XCircle size={16} />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(v.id)} title="Delete">
-                          <Trash2 size={16} />
-                        </Button>
+                         <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(v.id)} title="Delete">
+                           <Trash2 size={16} />
+                         </Button>
+                         <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary/10" onClick={() => handleRiskScan(v.id)} disabled={scanningId === v.id} title="Risk Scan">
+                           {scanningId === v.id ? <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" /> : <ScanLine size={16} />}
+                         </Button>
                       </div>
                     </td>
                   </tr>
