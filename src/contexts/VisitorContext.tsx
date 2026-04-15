@@ -12,6 +12,7 @@ export interface Visitor {
   personToMeet: string;
   dateTime: string;
   status: VisitorStatus;
+  riskScore: number | null;
 }
 
 interface VisitorContextType {
@@ -34,6 +35,7 @@ const mapRow = (row: any): Visitor => ({
   personToMeet: row.person_to_meet || "General",
   dateTime: row.date_time,
   status: row.status as VisitorStatus,
+  riskScore: row.risk_score ?? null,
 });
 
 export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,8 +69,8 @@ export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, [refreshVisitors]);
 
-  const addVisitor = useCallback(async (v: Omit<Visitor, "id" | "status">) => {
-    await supabase.from("visitors").insert({
+  const addVisitor = useCallback(async (v: Omit<Visitor, "id" | "status" | "riskScore">) => {
+    const { data, error } = await supabase.from("visitors").insert({
       name: v.name,
       email: v.email || "N/A",
       phone: v.phone,
@@ -76,7 +78,13 @@ export const VisitorProvider: React.FC<{ children: React.ReactNode }> = ({ child
       person_to_meet: v.personToMeet,
       date_time: v.dateTime,
       status: "Pending",
-    });
+    }).select("id").single();
+
+    // Trigger async risk scan
+    if (!error && data) {
+      supabase.functions.invoke("risk-scan", { body: { visitor_id: data.id } })
+        .catch(e => console.error("Risk scan failed:", e));
+    }
   }, []);
 
   const updateStatus = useCallback(async (id: string, status: VisitorStatus) => {
