@@ -3,6 +3,7 @@ import { Users, UserCheck, UserX, CalendarDays, Shield, AlertTriangle } from "lu
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/AppLayout";
 import AIInsightsPanel from "@/components/AIInsightsPanel";
+import WatchlistAlert from "@/components/WatchlistAlert";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid,
@@ -79,6 +80,9 @@ const Dashboard = () => {
           <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">AI-powered visitor management overview</p>
         </div>
+
+        {/* Watchlist Alerts */}
+        <WatchlistAlert />
 
         {/* Stat cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
