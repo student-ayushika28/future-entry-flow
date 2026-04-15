@@ -18,7 +18,7 @@ export interface Visitor {
 interface VisitorContextType {
   visitors: Visitor[];
   loading: boolean;
-  addVisitor: (v: Omit<Visitor, "id" | "status">) => Promise<void>;
+  addVisitor: (v: Omit<Visitor, "id" | "status" | "riskScore">) => Promise<void>;
   updateStatus: (id: string, status: VisitorStatus) => Promise<void>;
   deleteVisitor: (id: string) => Promise<void>;
   refreshVisitors: () => Promise<void>;
