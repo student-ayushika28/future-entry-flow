@@ -25,8 +25,8 @@ const Login = () => {
     if (result.error) {
       toast({ title: "Login Failed", description: result.error, variant: "destructive" });
     } else {
-      toast({ title: "Welcome back!", description: "Login successful." });
-      navigate("/dashboard");
+      toast({ title: "Welcome back!", description: "Please complete verification." });
+      navigate("/verify");
     }
   };
 
@@ -41,7 +41,7 @@ const Login = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/dashboard");
+    navigate("/verify");
   };
 
   return (
