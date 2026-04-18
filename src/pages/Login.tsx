@@ -23,9 +23,15 @@ const Login = () => {
     const result = await signIn(email, password);
     setLoading(false);
     if (result.error) {
-      toast({ title: "Login Failed", description: result.error, variant: "destructive" });
+      const hint = /invalid/i.test(result.error)
+        ? "Email or password is incorrect. If this is your first time, please sign up first."
+        : result.error;
+      toast({ title: "Login Failed", description: hint, variant: "destructive" });
     } else {
-      toast({ title: "Welcome back!", description: "Please complete verification." });
+      toast({
+        title: "✅ Login Successful",
+        description: `Welcome back, ${email}! A confirmation has been sent. Please complete OTP verification.`,
+      });
       navigate("/verify");
     }
   };
