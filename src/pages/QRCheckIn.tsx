@@ -10,6 +10,16 @@ const QRCheckIn = () => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
+  // Preload the visitor-form route so the page opens instantly after a QR scan
+  if (typeof window !== "undefined") {
+    const href = `${window.location.origin}/visitor-form`;
+    if (!document.querySelector(`link[rel="prefetch"][href="${href}"]`)) {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  }
   const checkInUrl = `${window.location.origin}/visitor-form`;
 
   const handleCopy = () => {

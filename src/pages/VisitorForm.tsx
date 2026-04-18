@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Phone, FileText, CheckCircle2 } from "lucide-react";
+import { User, Phone, FileText, CheckCircle2, Loader2 } from "lucide-react";
 import FloatingShapes from "@/components/FloatingShapes";
 
 const purposes = ["Campus Tour", "Interview", "Meeting", "Document Submission", "Event Attendance", "Other"];
@@ -15,8 +15,26 @@ const VisitorForm = () => {
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [booting, setBooting] = useState(true);
   const [form, setForm] = useState({ name: "", phone: "", purpose: "", personToMeet: "", email: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const t = setTimeout(() => setBooting(false), 200);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (booting) {
+    return (
+      <div className="min-h-screen gradient-bg flex flex-col items-center justify-center gap-4 p-4 relative">
+        <FloatingShapes />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--neon-cyan))] flex items-center justify-center text-2xl font-bold animate-pulse z-10">V</div>
+        <div className="flex items-center gap-2 text-muted-foreground z-10">
+          <Loader2 className="animate-spin" size={18} /> Loading visitor form…
+        </div>
+      </div>
+    );
+  }
 
   const validate = () => {
     const e: Record<string, string> = {};
